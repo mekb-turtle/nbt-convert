@@ -21,10 +21,10 @@ type:\
 string|binary: Type to convert to. edit: Open the file in your text editor.
 
 input: Input file\
-Defaults to stdin. Use - for stdin.
+Use - for stdin.
 
 output: Output file\
-Defaults to stdin, or to input when editing. Use - for stdin.
+Use - for stdin.
 
 # EXAMPLES
 

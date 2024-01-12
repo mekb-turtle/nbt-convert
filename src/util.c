@@ -65,6 +65,11 @@ bool write_file(FILE *fp, file_data data) {
 }
 
 bool read_filename(char *filename, file_data *data, bool allow_stdin) {
+	if (!filename || filename[0] == '\0') {
+		eprintf("Input file not specified\n");
+		return false;
+	}
+
 	FILE *fp = NULL;
 	if (allow_stdin && filename[0] == '-' && filename[1] == '\0') {
 		fp = stdin;
@@ -81,6 +86,11 @@ bool read_filename(char *filename, file_data *data, bool allow_stdin) {
 }
 
 bool write_filename(char *filename, file_data data, bool allow_stdout, bool *created_file) {
+	if (!filename || filename[0] == '\0') {
+		eprintf("Output file not specified\n");
+		return false;
+	}
+
 	FILE *fp = NULL;
 	if (allow_stdout && filename[0] == '-' && filename[1] == '\0') {
 		fp = stdout;
@@ -148,4 +158,3 @@ clean:
 	if (created && unlink(filename)) warn("unlink: %s", filename); // delete the temp file
 	return NULL_FILE;
 }
-

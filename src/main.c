@@ -65,13 +65,12 @@ int main(int argc, char *argv[]) {
 	else
 		goto invalid;
 
-	char *input = "-";
-	char *output = "-";
+	char *input = NULL, *output = NULL;
 
 	if (argc > 2) input = argv[2];
 	if (argc > 3) output = argv[3];
 	else if (mode == EDIT)
-		output = input;
+		output = input; // output to the same file
 
 	file_data input_data = NULL_FILE, output_data = NULL_FILE, string_data = NULL_FILE, temp_data = NULL_FILE;
 
@@ -100,45 +99,53 @@ int main(int argc, char *argv[]) {
 		string_data = temp_data;
 
 		// convert back to binary
-		if (!(output_data = convert(string_data, TO_BINARY)).data || 1) {
+		if (!(output_data = convert(string_data, TO_BINARY)).data) {
+			FILE *input_fp = stdin;
+			int input_fd = STDIN_FILENO;
+
+			if (!isatty(input_fd)) {
+				res = CONVERSION_ERROR;
+				goto clean;
+			}
+
 			// ask user if they want to re-open the editor
 
 			// switch terminal mode to raw
 			struct termios termios, termios_set, termios_temp;
-			if (tcgetattr(STDIN_FILENO, &termios)) wgoto(no, "tcgetattr");
+			if (tcgetattr(input_fd, &termios)) wgoto(no, "tcgetattr");
 			termios_set = termios;
 
 			// set termios to raw
 			cfmakeraw(&termios_set);
-			if (tcsetattr(STDIN_FILENO, TCSANOW, &termios_set) || tcgetattr(STDIN_FILENO, &termios_temp) || !termios_cmp(&termios_set, &termios_temp)) {
-				tcsetattr(STDIN_FILENO, TCSANOW, &termios);
+			if (tcsetattr(input_fd, TCSANOW, &termios_set) || tcgetattr(input_fd, &termios_temp) || !termios_cmp(&termios_set, &termios_temp)) {
+				tcsetattr(input_fd, TCSANOW, &termios);
 				warnx("tcsetattr");
 				res = CONVERSION_ERROR;
 				goto clean;
 			}
 
-			printf("Do you want to continue editing the file? [Y/n] ");
-			fflush(stdout);
+			eprintf("Do you want to continue editing the file? [Y/n] ");
+			fflush(stderr);
 
 			for (;;) {
-				if (feof(stdin) || ferror(stdin)) {
+				if (feof(input_fp) || ferror(input_fp)) {
 				no:
-					printf("\r\n");
-					if (tcsetattr(STDIN_FILENO, TCSANOW, &termios)) warnx("tcsetattr");
+					eprintf("\r\n");
+					if (tcsetattr(input_fd, TCSANOW, &termios)) warnx("tcsetattr");
 					res = CONVERSION_ERROR;
 					goto clean;
 				}
 
-				fpurge(stdin);
-				int answer = fgetc(stdin);
+				fpurge(input_fp);
+				int answer = fgetc(input_fp);
 				switch (answer) {
 					case 'y':
 					case 'Y':
 					case '\n':
 					case '\r':
 					case ' ':
-						printf("\r\n");
-						if (tcsetattr(STDIN_FILENO, TCSANOW, &termios)) {
+						eprintf("\r\n");
+						if (tcsetattr(input_fd, TCSANOW, &termios)) {
 							warnx("tcsetattr");
 							res = CONVERSION_ERROR;
 							goto clean;
