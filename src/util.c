@@ -8,6 +8,15 @@
 
 #define BLOCK 512
 
+void free_file(struct file_data *data) {
+	// free the data in a file_data struct and remove the pointer to avoid double-free
+	if (data->data) {
+		free(data->data);
+		data->data = NULL;
+	}
+	data->size = 0;
+}
+
 bool read_file(FILE *fp, file_data *data) {
 	void *buffer = NULL, *new_buffer = NULL;
 	size_t size = 0, read;
@@ -65,7 +74,7 @@ bool write_file(FILE *fp, file_data data) {
 }
 
 bool read_filename(char *filename, file_data *data, bool allow_stdin) {
-	if (!filename || filename[0] == '\0') {
+	if (!filename) {
 		eprintf("Input file not specified\n");
 		return false;
 	}
@@ -86,7 +95,7 @@ bool read_filename(char *filename, file_data *data, bool allow_stdin) {
 }
 
 bool write_filename(char *filename, file_data data, bool allow_stdout, bool *created_file) {
-	if (!filename || filename[0] == '\0') {
+	if (!filename) {
 		eprintf("Output file not specified\n");
 		return false;
 	}

@@ -39,6 +39,8 @@ typedef struct file_data {
 	size_t size;
 } file_data;
 
+void free_file(struct file_data *data);
+
 bool read_file(FILE *fp, file_data *data);
 bool write_file(FILE *fp, file_data data);
 bool read_filename(char *filename, file_data *data, bool allow_stdin);
