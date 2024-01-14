@@ -120,13 +120,13 @@ file_data open_editor(file_data data) {
 	}
 
 	// get temp filename
-	char template[] = P_tmpdir "/nbt-convert.XXXXXX";
+	char template[] = P_tmpdir "/" TARGET ".XXXXXX";
 	char *filename_ = mktemp(template);
 	if (!filename_ || filename_[0] == '\0') wgoto(clean, "mktemp");
 	filename = malloc(strlen(filename_) + 8);
 	if (!filename) wgoto(clean, "malloc");
 	if (!strcpy(filename, filename_)) wgoto(clean, "strcpy");
-	if (!strcat(filename, ".nbt")) wgoto(clean, "strcat");
+	if (!strcat(filename, ".snbt")) wgoto(clean, "strcat");
 
 	// write data to the file
 	if (!write_filename(filename, data, false, &created)) goto clean;
